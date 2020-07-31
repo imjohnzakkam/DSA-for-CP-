@@ -18,7 +18,6 @@
 #define umap unordered_map<ll, ll>
 #define pll pair<ll,pair<ll, ll>>
 #define clr(x) memset(x,0,sizeof(x))
-#define set(x,k) memset(x,k,sizeof(x))
 #define cy cout << "YES" << endl
 #define  cn cout << "NO" << endl
 #define fastio ios_base::sync_with_stdio(false);cin.tie(NULL);cout.tie(NULL);
@@ -56,10 +55,88 @@ vl getFactorization(ll x)
     return ret; 
 } 
 
+struct segtree {
+	ll size;
+	vl mins;
+	
+	void init (ll n) {
+		size = 1;
+		while(size < n) size*=2;
+		mins.assign(2*size, 1e10);
+	}
+	void build (vl &a, ll x, ll lx, ll rx) {
+		if(rx-lx==1) {
+			if(lx < a.size()) {
+				mins[x] = a[lx];
+			}
+			return;
+		}
+		ll m = (lx+rx)/2;
+		build(a, 2*x+1, lx, m);
+		build(a, 2*x+2, m, rx);
+		mins[x] = min(mins[2*x+1], mins[2*x+2]);
+	}
+
+	void build(vl &a) {
+		build(a, 0, 0, size);
+	}
+
+	void set (ll i, ll v, ll x, ll lx, ll rx) {
+		if(rx - lx == 1) {
+			mins[x] = v;
+			return;
+		}
+		ll m = (lx + rx)/2;
+		if(i<m) {
+			set(i, v, 2*x+1, lx, m);
+		}
+		else {
+			set(i, v, 2*x+2, m, rx);
+		}
+		mins[x] = min(mins[2*x+1], mins[2*x+2]);
+	}
+
+	void set (ll i, ll v) {
+		set(i, v, 0, 0, size);
+	}
+
+	ll minimum (ll l, ll r, ll x, ll lx, ll rx) {
+		if(lx>=r or l>=rx) return 0;
+		if(lx>=l and rx<=r) return mins[x];
+		ll m = (lx+rx)/2;
+		return min(minimum(l,r,2*x+1,lx,m), minimum(l,r,2*x+2,m,rx));
+	}
+
+	ll minimum (ll l, ll r) {
+		return minimum(l,r,0,0,size);
+	}
+};
 
 void check()
 {
-	
+	ll n,m;
+	cin >> n >> m; // The size of the array and the number of queries
+	segtree st;
+	st.init(n);
+	vl a(n);
+	for(int i=0;i<n;i++) {
+		cin >> a[i];
+	}
+	st.build(a);
+	while(m--) {
+		ll op;
+		cin >> op;
+		if(op==1) {
+			ll i, v;
+			cin >> i >> v;
+			st.set(i,v);
+		}
+		else {
+			ll l,r;
+			cin >> l >> r;
+			cout << st.minimum(l,r) << endl;
+		}
+	}
     return ;
 }
 
@@ -67,7 +144,7 @@ int32_t main()
 {
     fastio;
     ll t = 1;
-    cin >> t;
+    // cin >> t;
     while(t--)
         check();
     return 0;
