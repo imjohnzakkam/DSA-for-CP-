@@ -56,9 +56,15 @@ vl getFactorization(ll x)
     return ret; 
 } 
 
+struct segtree {
+	
+};
+
 
 void check()
 {
+	ll n,m;
+	cin >> n >> m; // The size of the array and the number of queries
 	
     return ;
 }
