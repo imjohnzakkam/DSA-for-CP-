@@ -66,6 +66,7 @@ struct segtree {
 	}
 
 	void build (vl &a, ll x, ll lx, ll rx) {
+		// we build the segtree in linear time, using a vector which is passed as an argument to build
 		if(rx-lx==1) {
 			if(lx < a.size()) {
 				sums[x] = a[lx];
@@ -83,6 +84,8 @@ struct segtree {
 	}
 
 	void set (ll i, ll v, ll x, ll lx, ll rx) {
+		// the recursive set function runs in nlogn time as we have to check logn times for each iteration.
+		// we can also build segtree in linear time.
 		if(rx - lx == 1) {
 			sums[x] = v;
 			return;
@@ -102,6 +105,7 @@ struct segtree {
 	}
 
 	ll sum (ll l, ll r, ll x, ll lx, ll rx) {
+		// querying for the sum of the segment [l,r) will take logn time which can't be optimised
 		if(lx>=r or l>=rx) return 0;
 		if(lx>=l and rx<=r) return sums[x];
 		ll m = (lx+rx)/2;
