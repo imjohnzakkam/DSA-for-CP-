@@ -65,6 +65,23 @@ struct segtree {
 		sums.assign(2*size, 0LL);
 	}
 
+	void build (vl &a, ll x, ll lx, ll rx) {
+		if(rx-lx==1) {
+			if(lx < a.size()) {
+				sums[x] = a[lx];
+			}
+			return;
+		}
+		ll m = (lx+rx)/2;
+		build(a, 2*x+1, lx, m);
+		build(a, 2*x+2, m, rx);
+		sums[x] = sums[2*x+1] + sums[2*x+2];
+	}
+
+	void build(vl &a) {
+		build(a, 0, 0, size);
+	}
+
 	void set (ll i, ll v, ll x, ll lx, ll rx) {
 		if(rx - lx == 1) {
 			sums[x] = v;
@@ -102,11 +119,11 @@ void check()
 	cin >> n >> m; // The size of the array and the number of queries
 	segtree st;
 	st.init(n);
+	vl a(n);
 	for(int i=0;i<n;i++) {
-		ll v;
-		cin >> v;
-		st.set(i,v);
+		cin >> a[i];
 	}
+	st.build(a);
 	while(m--) {
 		ll op;
 		cin >> op;
