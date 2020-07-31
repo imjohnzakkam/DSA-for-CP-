@@ -57,11 +57,14 @@ vl getFactorization(ll x)
 
 struct segtree {
 	ll size;
-	vl sums;
+	vl sums; // the required segtree
 
 	void init (ll n) {
+		// while initialising the segtree we make sure that the size is a power of 2
+		// because, we compare everything in pairs.
 		size = 1;
 		while(size < n) size*=2;
+		// we initialise all the elements to 0 (in this case)
 		sums.assign(2*size, 0LL);
 	}
 
@@ -122,24 +125,24 @@ void check()
 	ll n,m;
 	cin >> n >> m; // The size of the array and the number of queries
 	segtree st;
-	st.init(n);
+	st.init(n); // make the size power of 2. O(logn) time
 	vl a(n);
 	for(int i=0;i<n;i++) {
 		cin >> a[i];
 	}
-	st.build(a);
+	st.build(a); // build the segement tree in O(n) time
 	while(m--) {
 		ll op;
 		cin >> op;
 		if(op==1) {
 			ll i, v;
 			cin >> i >> v;
-			st.set(i,v);
+			st.set(i,v); // make a[i] = v
 		}
 		else {
 			ll l,r;
 			cin >> l >> r;
-			cout << st.sum(l,r) << endl;
+			cout << st.sum(l,r) << endl; // calculate the sum of a[i] in the interval [l,r)
 		}
 	}
     return ;
