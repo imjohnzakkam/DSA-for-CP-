@@ -57,24 +57,29 @@ vl getFactorization(ll x)
 
 struct segtree {
 	ll size;
-	vl mins;
-	
+	vl minimums; // the required segtree
+
 	void init (ll n) {
+		// while initialising the segtree we make sure that the size is a power of 2
+		// because, we compare everything in pairs.
 		size = 1;
 		while(size < n) size*=2;
-		mins.assign(2*size, 1e10);
+		// we initialise all the elements to 0 (in this case)
+		minimums.assign(2*size, 0LL);
 	}
+
 	void build (vl &a, ll x, ll lx, ll rx) {
+		// we build the segtree in linear time, using a vector which is passed as an argument to the build function
 		if(rx-lx==1) {
 			if(lx < a.size()) {
-				mins[x] = a[lx];
+				minimums[x] = a[lx]; // base case 
 			}
 			return;
 		}
 		ll m = (lx+rx)/2;
 		build(a, 2*x+1, lx, m);
 		build(a, 2*x+2, m, rx);
-		mins[x] = min(mins[2*x+1], mins[2*x+2]);
+		minimums[x] = min(minimums[2*x+1],  minimums[2*x+2]);
 	}
 
 	void build(vl &a) {
@@ -82,8 +87,10 @@ struct segtree {
 	}
 
 	void set (ll i, ll v, ll x, ll lx, ll rx) {
+		// the recursive set function runs in nlogn time as we have to check logn times for each iteration.
+		// we can also build segtree in linear time.
 		if(rx - lx == 1) {
-			mins[x] = v;
+			minimums[x] = v;
 			return;
 		}
 		ll m = (lx + rx)/2;
@@ -93,7 +100,7 @@ struct segtree {
 		else {
 			set(i, v, 2*x+2, m, rx);
 		}
-		mins[x] = min(mins[2*x+1], mins[2*x+2]);
+		minimums[x] = min(minimums[2*x+1], minimums[2*x+2]);
 	}
 
 	void set (ll i, ll v) {
@@ -101,8 +108,9 @@ struct segtree {
 	}
 
 	ll minimum (ll l, ll r, ll x, ll lx, ll rx) {
-		if(lx>=r or l>=rx) return 0;
-		if(lx>=l and rx<=r) return mins[x];
+		// querying for the minimum of the segment [l,r) will take logn time which can't be optimised
+		if(lx>=r or l>=rx) return INT_MAX;
+		if(lx>=l and rx<=r) return minimums[x];
 		ll m = (lx+rx)/2;
 		return min(minimum(l,r,2*x+1,lx,m), minimum(l,r,2*x+2,m,rx));
 	}
@@ -117,26 +125,27 @@ void check()
 	ll n,m;
 	cin >> n >> m; // The size of the array and the number of queries
 	segtree st;
-	st.init(n);
+	st.init(n); // make the size power of 2. O(logn) time
 	vl a(n);
 	for(int i=0;i<n;i++) {
 		cin >> a[i];
 	}
-	st.build(a);
+	st.build(a); // build the segement tree in O(n) time
 	while(m--) {
 		ll op;
 		cin >> op;
 		if(op==1) {
 			ll i, v;
 			cin >> i >> v;
-			st.set(i,v);
+			st.set(i,v); // make a[i] = v
 		}
 		else {
 			ll l,r;
 			cin >> l >> r;
-			cout << st.minimum(l,r) << endl;
+			cout << st.minimum(l,r) << endl; // calculate the minimum of a[i] in the interval [l,r)
 		}
 	}
+	// The total complexity would be : O(n) for building the segtree and O(logn) for each query
     return ;
 }
 
