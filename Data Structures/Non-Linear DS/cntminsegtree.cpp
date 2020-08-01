@@ -56,49 +56,55 @@ vl getFactorization(ll x)
 } 
 
 struct item {
-	ll m,c;
+	ll m, c;
 };
 
 struct segtree {
 	ll size;
-	vector<item> cntmins;
-	item NEUTRAL_ELEMENT = {INT_MAX, 0};
+	vector<item> values; // the required segtree
 
-	item merge (item a, item b) {
-		if(a.m<b.m) return a;
-		if(a.m>b.m) return b;
-		return {a.m, (a.c+b.c)};
+	void init (ll n) {
+		// while initialising the segtree we make sure that the size is a power of 2
+		// because, we compare everything in pairs.
+		size = 1;
+		while(size < n) size*=2;
+		// we initialise all the elements to 0 (in this case)
+		values.resize(2*size);
 	}
 
 	item single (ll v) {
 		return {v, 1};
 	}
 
-	void init (ll n) {
-		size = 1;
-		while(n<size) size*=2;
-		cntmins.resize(2*size);
+	item merge (item a, item b) {
+		if(a.m>b.m) return b;
+		if(a.m<b.m) return a;
+		return {a.m, a.c+b.c};
 	}
 
 	void build (vl &a, ll x, ll lx, ll rx) {
+		// we build the segtree in linear time, using a vector which is passed as an argument to the build function
 		if(rx-lx==1) {
-			if(lx < a.size())
-				cntmins[x] = single(a[lx]);
+			if(lx < a.size()) {
+				values[x] = single(a[lx]); // base case 
+			}
 			return;
 		}
 		ll m = (lx+rx)/2;
 		build(a, 2*x+1, lx, m);
 		build(a, 2*x+2, m, rx);
-		cntmins[x] = merge(cntmins[2*x+1],  cntmins[2*x+2]);
+		values[x] = merge(values[2*x+1],  values[2*x+2]);
 	}
 
-	void build (vl &a) {
-		build(a,0,0,size);
+	void build(vl &a) {
+		build(a, 0, 0, size);
 	}
 
 	void set (ll i, ll v, ll x, ll lx, ll rx) {
+		// the recursive set function runs in nlogn time as we have to check logn times for each iteration.
+		// we can also build segtree in linear time.
 		if(rx - lx == 1) {
-			cntmins[x] = single(v);
+			values[x] = single(v);
 			return;
 		}
 		ll m = (lx + rx)/2;
@@ -108,51 +114,53 @@ struct segtree {
 		else {
 			set(i, v, 2*x+2, m, rx);
 		}
-		cntmins[x] = merge(cntmins[2*x+1], cntmins[2*x+2]);
+		values[x] = merge(values[2*x+1], values[2*x+2]);
 	}
 
 	void set (ll i, ll v) {
 		set(i, v, 0, 0, size);
 	}
 
-	item calc (ll l,ll r, ll x, ll lx, ll rx) {
-		if(lx>=r or l>=rx) return NEUTRAL_ELEMENT;
-		if(lx>=l and rx<=r) return cntmins[x];
+	item calc (ll l, ll r, ll x, ll lx, ll rx) {
+		// querying for the calc of the segment [l,r) will take logn time which can't be optimised
+		if(lx>=r or l>=rx) return {INT_MAX, 0};
+		if(lx>=l and rx<=r) return values[x];
 		ll m = (lx+rx)/2;
 		return merge(calc(l,r,2*x+1,lx,m), calc(l,r,2*x+2,m,rx));
 	}
 
 	item calc (ll l, ll r) {
-		calc(l,r,0,0,size);
+		return calc(l,r,0,0,size);
 	}
-
 };
-
 
 void check()
 {
 	ll n,m;
-	cin >> n >> m;
+	cin >> n >> m; // The size of the array and the number of queries
 	segtree st;
-	st.init(n);
+	st.init(n); // make the size power of 2. O(logn) time
 	vl a(n);
-	for(int i=0;i<n;i++) cin >> a[i];
-	st.build(a);
+	for(int i=0;i<n;i++) {
+		cin >> a[i];
+	}
+	st.build(a); // build the segement tree in O(n) time
 	while(m--) {
 		ll op;
 		cin >> op;
 		if(op==1) {
-			ll i,v;
+			ll i, v;
 			cin >> i >> v;
-			st.set(i,v);
+			st.set(i,v); // make a[i] = v
 		}
 		else {
 			ll l,r;
 			cin >> l >> r;
 			item ans = st.calc(l,r);
-			cout << ans.m << " " << ans.c << endl;
+			cout << ans.m << sp << ans.c << endl; // calculate the minimum of a[i] in the interval [l,r)
 		}
 	}
+	// The total complexity would be : O(n) for building the segtree and O(logn) for each query
     return ;
 }
 
