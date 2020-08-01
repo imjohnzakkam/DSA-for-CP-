@@ -62,15 +62,38 @@ struct item {
 struct segtree {
 	ll size;
 	vector<item> cntmins;
+	item NEUTRAL_ELEMENT = {INT_MAX, 0};
 
-	void init (ll n) {
-		size = 1;
-		while(n<=size) size*=2;
-		cntmins.resize(2*size);
+	item merge (item a, item b) {
+		if(a.m<b.m) return a;
+		if(a.m>b.m) return b;
+		return {a.m, (a.c+b.c)};
 	}
 
 	item single (ll v) {
 		return {v, 1};
+	}
+
+	void init (ll n) {
+		size = 1;
+		while(n<size) size*=2;
+		cntmins.resize(2*size);
+	}
+
+	void build (vl &a, ll x, ll lx, ll rx) {
+		if(rx-lx==1) {
+			if(lx < a.size())
+				cntmins[x] = single(a[lx]);
+			return;
+		}
+		ll m = (lx+rx)/2;
+		build(a, 2*x+1, lx, m);
+		build(a, 2*x+2, m, rx);
+		cntmins[x] = merge(cntmins[2*x+1],  cntmins[2*x+2]);
+	}
+
+	void build (vl &a) {
+		build(a,0,0,size);
 	}
 
 	void set (ll i, ll v, ll x, ll lx, ll rx) {
@@ -92,31 +115,11 @@ struct segtree {
 		set(i, v, 0, 0, size);
 	}
 
-	item merge (item a, item b) {
-		if(a.m<b.m) return a;
-		else if(a.m>b.m) return b;
-		else return {a.m, a.c+b.c};
-	}
-
-	void build (vl &a, ll x, ll lx, ll rx) {
-		if(rx-lx==1) {
-			if(lx < a.size())
-				cntmins[x] = single(a[lx]);
-			return;
-		}
-		ll m = (lx+rx)/2;
-		build(a, 2*x+1, lx, m);
-		build(a, 2*x+2, m, rx);
-		cntmins[x] = merge(cntmins[2*x+1],  cntmins[2*x+2]);
-
-	}
-
-	void build (vl &a) {
-		build(a,0,0,size);
-	}
-
 	item calc (ll l,ll r, ll x, ll lx, ll rx) {
-		
+		if(lx>=r or l>=rx) return NEUTRAL_ELEMENT;
+		if(lx>=l and rx<=r) return cntmins[x];
+		ll m = (lx+rx)/2;
+		return merge(calc(l,r,2*x+1,lx,m), calc(l,r,2*x+2,m,rx));
 	}
 
 	item calc (ll l, ll r) {
@@ -157,7 +160,7 @@ int32_t main()
 {
     fastio;
     ll t = 1;
-    cin >> t;
+    // cin >> t;
     while(t--)
         check();
     return 0;
